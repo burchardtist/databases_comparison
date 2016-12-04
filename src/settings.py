@@ -1,4 +1,4 @@
-DB_SIZE = [pow(10, 5), pow(10, 7), pow(10, 9)]
+DB_SIZE = [pow(10, 3), pow(10, 4), pow(10, 5)]
 
 DATABASES = dict(
     MYSQL=dict(
@@ -53,19 +53,25 @@ QUERIES = {
         'drop_db': 'DROP DATABASE IF EXISTS {0};',
         'create_table': 'CREATE TABLE {0}({1});',
         'insert': 'INSERT INTO {0}({1}) VALUES({2});',
-        'update': 'UPDATE {0} SET {1} WHERE id={2}'
+        'select': 'SELECT * FROM {0} where {1};',
+        'update': 'UPDATE {0} SET {1} WHERE {2};',
+        'create_index': 'ALTER TABLE {0} ADD INDEX({1});',
     },
     'POSTGRESQL': {
         'create_db': 'CREATE DATABASE {0};',
         'drop_db': 'DROP DATABASE IF EXISTS {0};',
         'create_table': 'CREATE TABLE {0}({1});',
         'insert': 'INSERT INTO {0}({1}) VALUES({2});',
-        'update': 'UPDATE {0} SET {1} WHERE id={2}'
+        'select': 'SELECT * FROM {0} where {1};',
+        'update': 'UPDATE {0} SET {1} WHERE {2};',
+        'create_index': 'CREATE INDEX {2} ON {0}({1});',
     },
     'SQLITE': {
         'create_table': 'CREATE TABLE {0}({1});',
         'drop_table': 'DROP TABLE IF EXISTS {0};',
         'insert': 'INSERT INTO {0}({1}) VALUES({2});',
-        'update': 'UPDATE {0} SET {1} WHERE id={2}'
+        'select': 'SELECT * FROM {0} where {1};',
+        'update': 'UPDATE {0} SET {1} WHERE {2};',
+        'create_index': 'CREATE INDEX {2} ON {0}({1});',
     }
 }

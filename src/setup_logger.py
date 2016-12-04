@@ -12,13 +12,14 @@ def setup_logger(name):
     if not os.path.isdir(path):
         os.mkdir(path)
 
-    file_handler = logging.FileHandler(
-        filename=os.path.join(path, filename),
-        mode='a'
-    )
+    if not logger.handlers:
+        file_handler = logging.FileHandler(
+            filename=os.path.join(path, filename),
+            mode='a'
+        )
 
-    formatter = logging.Formatter('%(asctime)s - %(message)s')
-    file_handler.setFormatter(formatter)
-    logger.addHandler(file_handler)
+        formatter = logging.Formatter('%(asctime)s - %(message)s')
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
 
     return logger

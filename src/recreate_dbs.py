@@ -3,9 +3,14 @@ import string
 from datetime import timedelta, datetime
 
 from sqlalchemy import create_engine
+from sqlalchemy import text
 
-from settings import DATABASES, TABLE_COLUMNS, TABLE_NAME, QUERIES
+from settings import DATABASES, TABLE_COLUMNS, TABLE_NAME, QUERIES, DB_SIZE
+from setup_logger import setup_logger
 from timed import Timed
+
+
+logger = setup_logger('performance')
 
 
 def print_range(length):
@@ -46,11 +51,17 @@ class Recreate:
     def __init__(self, dbsystems, length):
         self.dbsystems = dbsystems
         self.data = self.generate_data(length)
+        print('')
         self.length = len(self.data)
+        logger.info('LENGTH: {}'.format(self.length))
 
     def recreate_db(self):
         for connector in self.dbsystems:
             self._recreate_db(connector)
+
+    def close(self):
+        for connector in self.dbsystems:
+            connector.conn.dispose()
 
     def _recreate_db(self, db):
         if db.dbsystem == 'SQLITE':
@@ -81,15 +92,38 @@ class Recreate:
             for i, name in self._insert_data(self.data, connector):
                 print('[INSERT][{2}]: {0} / {1}'.format(i + 1, self.length, name), end='\r')
             print('')
-            yield connector.dbsystem
+            yield connector.dbsystem, self.length
+
+    @Timed('select')
+    def select_data(self, where):
+        for connector in self.dbsystems:
+            connector.conn.execute(text(connector.QUERIES['select'].format(
+                TABLE_NAME,
+                where
+            )))
+            yield connector.dbsystem, self.length
 
     @Timed('update')
-    def update_data(self):
+    def update_data(self, set_, where):
         for connector in self.dbsystems:
-            for i, name in self._update_data(self.data, connector):
+            for i, name in self._update_data(connector, set_, where):
                 print('[UPDATE][{2}]: {0} / {1}'.format(i + 1, self.length, name), end='\r')
             print('')
-            yield connector.dbsystem
+            yield connector.dbsystem, self.length
+
+    def add_index(self):
+        for connector in self.dbsystems:
+            connector.conn.execute(connector.QUERIES['create_index'].format(
+                TABLE_NAME,
+                'city',
+                'city_index'
+            ))
+            connector.conn.execute(connector.QUERIES['create_index'].format(
+                TABLE_NAME,
+                'lat',
+                'lat_index'
+            ))
+            print('[ADD_INDEX][{}] done'.format(connector.dbsystem))
 
     def _insert_data(self, data, connector):
         for i, item in enumerate(data):
@@ -100,13 +134,13 @@ class Recreate:
             ))
             yield i, connector.dbsystem
 
-    def _update_data(self, data, connector):
-        for i, item in enumerate(data):
-            connector.conn.execute(connector.QUERIES['update'].format(
+    def _update_data(self, connector, set_, where):
+        for i in range(self.length):
+            connector.conn.execute(text(connector.QUERIES['update'].format(
                 TABLE_NAME,
-                ','.join([x for x in item]),
-                ','.join([self.escape_values(col, val) for col, val in item.items()])
-            ))
+                set_,
+                where
+            )))
             yield i, connector.dbsystem
 
     def _gen_city(self):
@@ -135,14 +169,25 @@ class Recreate:
             return '\'{}\''.format(val)
 
 if __name__ == '__main__':
-    db = Recreate(
-        [
-            Connector('sqlite'),
-            Connector('postgresql'),
-            Connector('mysql')
-        ],
-        pow(20, 2)
-    )
-    db.recreate_db()
-    db.insert_data()
+    for length in DB_SIZE:
+        for _ in range(5):
+            db = Recreate(
+                [
+                    Connector('sqlite'),
+                    Connector('postgresql'),
+                    Connector('mysql')
+                ],
+                length
+            )
+            db.recreate_db()
+            db.insert_data()
+            db.select_data('city like \'%ab%\' and lat > 30')
+            db.update_data('city=\'1posen\', lat=52.4064, lon=16.9252', 'city like \'%ab%\'')
+            db.close()
+
+            db.recreate_db()
+            db.add_index()
+            db.select_data('city like \'%1pos%\' and lat > 30')
+            db.update_data('city=\'stadt\', lat=5.40624, lon=1.3252', 'city like \'%1pos%\'')
+            db.close()
 

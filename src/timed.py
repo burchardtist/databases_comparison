@@ -14,13 +14,11 @@ class Timed:
             try:
                 while True:
                     start = time()
-                    dbsystem = next(g)
+                    dbsystem, length = next(g)
                     elapsed = time() - start
-                    print("[%s][%s] time: %.3fs\n" % (self.operation, dbsystem, elapsed))
-                    self.logger.info("[%s][%s] time: %.3fs" % (self.operation, dbsystem, elapsed))
+                    self.logger.info("[%s][%s][%s] time: %.3fs" % (length, self.operation, dbsystem, elapsed))
             except StopIteration:
                 return
-
         return wrapper
 
 
