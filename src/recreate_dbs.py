@@ -5,6 +5,7 @@ from datetime import timedelta, datetime
 from sqlalchemy import create_engine
 
 from settings import DATABASES, TABLE_COLUMNS, TABLE_NAME, QUERIES
+from timed import Timed
 
 
 def print_range(length):
@@ -42,14 +43,14 @@ class Connector:
 
 
 class Recreate:
-    def __init__(self, dbsystems):
+    def __init__(self, dbsystems, length):
         self.dbsystems = dbsystems
+        self.data = self.generate_data(length)
+        self.length = len(self.data)
 
-    def recreate_db(self, length):
-        for db in self.dbsystems:
-            self._recreate_db(db)
-
-        self.insert_data(length)
+    def recreate_db(self):
+        for connector in self.dbsystems:
+            self._recreate_db(connector)
 
     def _recreate_db(self, db):
         if db.dbsystem == 'SQLITE':
@@ -63,9 +64,9 @@ class Recreate:
         columns = ''.join(['{} {},'.format(x, z) for x, z in db.TABLE_COLUMNS.items()])[:-1]
         db.conn.execute(db.QUERIES['create_table'].format(TABLE_NAME, columns))
 
-    def insert_data(self, length):
+    def generate_data(self, length):
         print('generating data')
-        data = [
+        return [
             dict(
                 city=self._gen_city(),
                 lat=self._gen_lat(),
@@ -74,19 +75,39 @@ class Recreate:
             for _ in print_range(length)
         ]
 
-        for i, name in self._insert_data(data):
-            print('[{2}]INSERT: {0} / {1}'.format(i + 1, length, name), end='\r')
-
-    def _insert_data(self, data):
+    @Timed('insert')
+    def insert_data(self):
         for connector in self.dbsystems:
-            for i, item in enumerate(data):
-                connector.conn.execute(connector.QUERIES['insert'].format(
-                    TABLE_NAME,
-                    ','.join([x for x in item]),
-                    ','.join([self.escape_values(col, val) for col, val in item.items()])
-                ))
-                yield i, connector.dbsystem
+            for i, name in self._insert_data(self.data, connector):
+                print('[INSERT][{2}]: {0} / {1}'.format(i + 1, self.length, name), end='\r')
             print('')
+            yield connector.dbsystem
+
+    @Timed('update')
+    def update_data(self):
+        for connector in self.dbsystems:
+            for i, name in self._update_data(self.data, connector):
+                print('[UPDATE][{2}]: {0} / {1}'.format(i + 1, self.length, name), end='\r')
+            print('')
+            yield connector.dbsystem
+
+    def _insert_data(self, data, connector):
+        for i, item in enumerate(data):
+            connector.conn.execute(connector.QUERIES['insert'].format(
+                TABLE_NAME,
+                ','.join([x for x in item]),
+                ','.join([self.escape_values(col, val) for col, val in item.items()])
+            ))
+            yield i, connector.dbsystem
+
+    def _update_data(self, data, connector):
+        for i, item in enumerate(data):
+            connector.conn.execute(connector.QUERIES['update'].format(
+                TABLE_NAME,
+                ','.join([x for x in item]),
+                ','.join([self.escape_values(col, val) for col, val in item.items()])
+            ))
+            yield i, connector.dbsystem
 
     def _gen_city(self):
         length = random.randint(3, 50)
@@ -114,10 +135,14 @@ class Recreate:
             return '\'{}\''.format(val)
 
 if __name__ == '__main__':
-    db = Recreate([
-        Connector('sqlite'),
-        Connector('postgresql'),
-        Connector('mysql')
-    ])
-    db.recreate_db(pow(10, 2))
+    db = Recreate(
+        [
+            Connector('sqlite'),
+            Connector('postgresql'),
+            Connector('mysql')
+        ],
+        pow(20, 2)
+    )
+    db.recreate_db()
+    db.insert_data()
 

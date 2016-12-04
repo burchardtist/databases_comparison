@@ -52,18 +52,20 @@ QUERIES = {
         'create_db': 'CREATE DATABASE {0};',
         'drop_db': 'DROP DATABASE IF EXISTS {0};',
         'create_table': 'CREATE TABLE {0}({1});',
-        'insert': 'INSERT INTO {0}({1}) VALUES({2});'
+        'insert': 'INSERT INTO {0}({1}) VALUES({2});',
+        'update': 'UPDATE {0} SET {1} WHERE id={2}'
     },
     'POSTGRESQL': {
         'create_db': 'CREATE DATABASE {0};',
         'drop_db': 'DROP DATABASE IF EXISTS {0};',
         'create_table': 'CREATE TABLE {0}({1});',
-        'insert': 'INSERT INTO {0}({1}) VALUES({2});'
+        'insert': 'INSERT INTO {0}({1}) VALUES({2});',
+        'update': 'UPDATE {0} SET {1} WHERE id={2}'
     },
     'SQLITE': {
         'create_table': 'CREATE TABLE {0}({1});',
         'drop_table': 'DROP TABLE IF EXISTS {0};',
-        'insert': 'INSERT INTO {0}({1}) VALUES({2});'
+        'insert': 'INSERT INTO {0}({1}) VALUES({2});',
+        'update': 'UPDATE {0} SET {1} WHERE id={2}'
     }
 }
-
