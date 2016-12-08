@@ -87,7 +87,7 @@ class Recreate:
         ]
 
     @Timed('insert')
-    def insert_data(self):
+    def insert_data(self, **kwargs):
         for connector in self.dbsystems:
             for i, name in self._insert_data(self.data, connector):
                 print('[INSERT][{2}]: {0} / {1}'.format(i + 1, self.length, name), end='\r')
@@ -95,7 +95,7 @@ class Recreate:
             yield connector.dbsystem, self.length
 
     @Timed('select')
-    def select_data(self, where):
+    def select_data(self, where, **kwargs):
         for connector in self.dbsystems:
             connector.conn.execute(text(connector.QUERIES['select'].format(
                 TABLE_NAME,
@@ -104,7 +104,7 @@ class Recreate:
             yield connector.dbsystem, self.length
 
     @Timed('update')
-    def update_data(self, set_, where):
+    def update_data(self, set_, where, **kwargs):
         for connector in self.dbsystems:
             for i, name in self._update_data(connector, set_, where):
                 print('[UPDATE][{2}]: {0} / {1}'.format(i + 1, self.length, name), end='\r')
@@ -187,7 +187,7 @@ if __name__ == '__main__':
 
             db.recreate_db()
             db.add_index()
-            db.select_data('city like \'%1pos%\' and lat > 30')
-            db.update_data('city=\'stadt\', lat=5.40624, lon=1.3252', 'city like \'%1pos%\'')
+            db.select_data('city like \'%1pos%\' and lat > 30', indexed=True)
+            db.update_data('city=\'stadt\', lat=5.40624, lon=1.3252', 'city like \'%1pos%\'', indexed=True)
+            db.insert_data(indexed=True)
             db.close()
-

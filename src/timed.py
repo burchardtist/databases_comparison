@@ -12,6 +12,11 @@ class Timed:
         def wrapper(*args, **kwargs):
             g = gen(*args, **kwargs)
             try:
+                if 'indexed' in kwargs and kwargs['indexed']:
+                    self.operation = '{}_{}'.format(self.operation, 'indexed')
+                else:
+                    self.operation = self.operation.replace('_indexed', '')
+                    
                 while True:
                     start = time()
                     dbsystem, length = next(g)
@@ -20,5 +25,3 @@ class Timed:
             except StopIteration:
                 return
         return wrapper
-
-
