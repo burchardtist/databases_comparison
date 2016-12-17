@@ -43,7 +43,7 @@ wykonałem 5 razy i wyciągnąłem z nich średnią.
 [update_i10e4]: src/charts/update_indexed_10000.png
 [update_i10e5]: src/charts/update_indexed_100000.png
 
-#### insert
+## insert
 ![alt text][insert10e3]
 ![alt text][insert_i10e3]
 
@@ -53,7 +53,8 @@ wykonałem 5 razy i wyciągnąłem z nich średnią.
 ![alt text][insert10e5]
 ![alt text][insert_i10e5]
 
-#### select
+<br><br>
+## select
 ![alt text][select10e3]
 ![alt text][select_i10e3]
 
@@ -63,7 +64,8 @@ wykonałem 5 razy i wyciągnąłem z nich średnią.
 ![alt text][select10e5]
 ![alt text][select_i10e5]
 
-#### update
+<br><br> 
+## update
 ![alt text][update10e3]
 ![alt text][update_i10e3]
 
