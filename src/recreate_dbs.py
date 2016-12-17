@@ -168,6 +168,7 @@ class Recreate:
         else:
             return '\'{}\''.format(val)
 
+
 if __name__ == '__main__':
     for length in DB_SIZE:
         for _ in range(5):

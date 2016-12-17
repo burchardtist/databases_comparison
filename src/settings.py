@@ -1,4 +1,8 @@
-DB_SIZE = [pow(10, 4), pow(10, 5), pow(10, 6), pow(10, 7), pow(10, 8)]
+DB_SIZE = [
+    pow(10, 3),
+    pow(10, 4),
+    pow(10, 5)
+]
 
 DATABASES = dict(
     MYSQL=dict(

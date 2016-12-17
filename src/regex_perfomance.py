@@ -57,11 +57,6 @@ class PerformanceLogger:
                 plt.savefig('logs/{}_{}.png'.format(operation, length), bbox_inches='tight')
                 plt.close()
 
-
-
-
-
-
     def autolabel(self, rects, ax):
         for rect in rects:
             height = rect.get_height()
@@ -70,11 +65,9 @@ class PerformanceLogger:
                     ha='center', va='bottom')
 
 
-
 if __name__ == '__main__':
     performance_logger = PerformanceLogger()
     performance_logger.load()
     performance_logger.make_results()
     pprint(performance_logger.results)
     performance_logger.draw_charts()
-
